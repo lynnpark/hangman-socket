@@ -27,11 +27,12 @@ def now():
     return time.ctime(time.time())               # current time on the server
 
 def handleClient(connection):                    # in spawned thread: reply
-    time.sleep(5)                                # simulate a blocking activity
+    time.sleep(1)                                # simulate a blocking activity
     while True:                                  # read, write a client socket
         data = connection.recv(1024)
         if not data: break
-        reply = 'Echo=>%s at %s' % (data, now())
+        #reply = 'Echo=>%s at %s' % (data, now())
+        reply = 'lets hang some men'
         connection.send(reply.encode())
     connection.close()
 

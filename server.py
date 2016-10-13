@@ -1,15 +1,8 @@
-"""
-Server side: open a socket on a port, listen for a message from a client,
-and send an echo reply; echoes lines until eof when client closes socket;
-spawns a thread to handle each client connection; threads share global
-memory space with main thread; this is more portable than fork: threads
-work on standard Windows systems, but process forks do not;
-"""
 
 import time, _thread as thread           # or use threading.Thread().start()
 from socket import *                     # get socket constructor and constants
 from theman import HANGMAN
-
+import random
 
 # constants
 MAX_WRONG = len(HANGMAN) - 1
@@ -28,13 +21,62 @@ def now():
 
 def handleClient(connection):                    # in spawned thread: reply
     time.sleep(1)                                # simulate a blocking activity
-    while True:                                  # read, write a client socket
-        data = connection.recv(1024)
-        if not data: break
-        #reply = 'Echo=>%s at %s' % (data, now())
-        reply = 'lets hang some men'
-        connection.send(reply.encode())
-    connection.close()
+    #while True:                                  # read, write a client socket
+        #data = connection.recv(1024)
+        #if not data: break
+        #connection.send(data)
+    hangman(connection)
+    #connection.close()
+
+
+def hangman(connection):
+    #word = random.choice(WORDS)   # the word to be guessed
+    word= 'CUNT'
+    so_far = "-" * len(word)      # one dash for each letter in word to be guessed
+    wrong = 0                     # number of wrong guesses player has made
+    used = ['v']                     # letters already guessed
+
+    welcome = [b'Welcome to Hangman.  Good luck!']
+    entr = [b'\n\nEnter your guess: ']
+    #guess = "\nYou've used the following letters:\n"
+    sofar = "\nSo far, the word is:\n"
+    
+    sendSB(connection, welcome)
+
+    while wrong < MAX_WRONG and so_far != word:
+        connection.send(HANGMAN[wrong].encode('utf-8'))
+        #gss = guess.join
+        #connection.send(gss.encode('utf-8'))
+        #sendSB(connection, entr)
+        gs = connection.recv(1024).decode('utf-8')
+
+        print(gs)
+
+        if gs in word:
+            sendSB(connection, [b'yes'])
+            new = ""
+            for i in range(len(word)):
+                if gs == word[i]:
+                    new += gs
+                else:
+                    new += so_far[i]              
+            so_far = new
+            
+        else:
+            sendSB(connection, [b'lol'])
+            wrong += 1
+
+    if wrong == MAX_WRONG:
+        connection.send(HANGMAN[wrong].encode('utf-8'))
+        sendSB(connection, [b'ripip'])
+    else:
+        sendSB(connection, [b'gg'])
+        
+
+def sendSB(connection, thing):
+    for b in thing:
+        connection.send(b)
+
 
 def dispatcher():                                # listen until process killed
     while True:                                  # wait for next connection,

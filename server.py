@@ -30,30 +30,28 @@ def handleClient(connection):                    # in spawned thread: reply
 
 
 def hangman(connection):
-    #word = random.choice(WORDS)   # the word to be guessed
-    word= 'CUNT'
-    so_far = "-" * len(word)      # one dash for each letter in word to be guessed
-    wrong = 0                     # number of wrong guesses player has made
-    used = ['v']                     # letters already guessed
+    word = str(random.choice(WORDS))   
+    so_far = "\nSo far, the word is:\n" + ("-"* len(word))      
+    wrong = 0                     
+    used = ["\nYou've used the following letters:\n"]                     
 
-    welcome = [b'Welcome to Hangman.  Good luck!']
-    entr = [b'\n\nEnter your guess: ']
-    #guess = "\nYou've used the following letters:\n"
-    sofar = "\nSo far, the word is:\n"
+    sofar = '\nSo far, the word is:\n'
+
+
+##    connection.send(HANGMAN[wrong].encode('utf-8'))
+##    connection.send(sofar.encode('utf-8'))
+##    connection.send(so_far.encode('utf-8'))
     
-    sendSB(connection, welcome)
-
     while wrong < MAX_WRONG and so_far != word:
         connection.send(HANGMAN[wrong].encode('utf-8'))
-        #gss = guess.join
-        #connection.send(gss.encode('utf-8'))
-        #sendSB(connection, entr)
+        connection.send(so_far.encode('utf-8'))
+        connection.send(''.join(used).encode('utf-8'))
+        
         gs = connection.recv(1024).decode('utf-8')
-
-        print(gs)
-
+        used.append(gs)
+        used.append('\n')
         if gs in word:
-            sendSB(connection, [b'yes'])
+            connection.send(''.join(['\nYes! ', gs,' is in the word!']).encode('utf-8'))
             new = ""
             for i in range(len(word)):
                 if gs == word[i]:
@@ -63,19 +61,18 @@ def hangman(connection):
             so_far = new
             
         else:
-            sendSB(connection, [b'lol'])
+            connection.send(''.join(['\nNo ', gs,' is in not the word']).encode('utf-8'))
             wrong += 1
+
+
+        
+        
 
     if wrong == MAX_WRONG:
         connection.send(HANGMAN[wrong].encode('utf-8'))
-        sendSB(connection, [b'ripip'])
+        connection.send('\nYou have been hanged!'.encode('utf-8'))
     else:
-        sendSB(connection, [b'gg'])
-        
-
-def sendSB(connection, thing):
-    for b in thing:
-        connection.send(b)
+        connection.send('\nYou guessed it!'.encode('utf-8'))
 
 
 def dispatcher():                                # listen until process killed

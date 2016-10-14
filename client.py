@@ -6,12 +6,10 @@ serverHost = 'localhost'
 serverPort = 50007               
 
 
-sockobj = socket(AF_INET, SOCK_STREAM)      # make a TCP/IP socket object
-sockobj.connect((serverHost, serverPort))   # connect to server machine + port
+sockobj = socket(AF_INET, SOCK_STREAM)      
+sockobj.connect((serverHost, serverPort))  
 
-#d = sockobj.recv(1024).decode('utf-8')
 print('Welcome to Hangman.  Good luck!')
-
 
 while True:
     d = sockobj.recv(1024).decode('utf-8')
@@ -23,8 +21,4 @@ while True:
     gs = input("\n\nEnter your guess: ")
     sockobj.send(gs.encode('utf-8'))
 
-    
-
-
-
-sockobj.close()                             # close socket to send eof to server
+sockobj.close()                            

@@ -19,14 +19,9 @@ sockobj.listen(5)                                # allow up to 5 pending connect
 def now():
     return time.ctime(time.time())               # current time on the server
 
-def handleClient(connection):                    # in spawned thread: reply
-    time.sleep(1)                                # simulate a blocking activity
-    #while True:                                  # read, write a client socket
-        #data = connection.recv(1024)
-        #if not data: break
-        #connection.send(data)
+def handleClient(connection):                   
+    time.sleep(1)                               
     hangman(connection)
-    #connection.close()
 
 
 def hangman(connection):
@@ -36,11 +31,6 @@ def hangman(connection):
     used = ["\nYou've used the following letters:\n"]                     
 
     sofar = '\nSo far, the word is:\n'
-
-
-##    connection.send(HANGMAN[wrong].encode('utf-8'))
-##    connection.send(sofar.encode('utf-8'))
-##    connection.send(so_far.encode('utf-8'))
     
     while wrong < MAX_WRONG and so_far != word:
         connection.send(HANGMAN[wrong].encode('utf-8'))
@@ -64,10 +54,6 @@ def hangman(connection):
             connection.send(''.join(['\nNo ', gs,' is in not the word']).encode('utf-8'))
             wrong += 1
 
-
-        
-        
-
     if wrong == MAX_WRONG:
         connection.send(HANGMAN[wrong].encode('utf-8'))
         connection.send('\nYou have been hanged!'.encode('utf-8'))
@@ -75,9 +61,9 @@ def hangman(connection):
         connection.send('\nYou guessed it!'.encode('utf-8'))
 
 
-def dispatcher():                                # listen until process killed
-    while True:                                  # wait for next connection,
-        connection, address = sockobj.accept()   # pass to thread for service
+def dispatcher():                                
+    while True:                                  
+        connection, address = sockobj.accept()  
         print('Server connected by', address, end=' ')
         print('at', now())
         thread.start_new_thread(handleClient, (connection,))
